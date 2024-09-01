@@ -24,8 +24,9 @@ class LruMMU(MMU):
         else:
             self.page_faults += 1
             if len(self.memory) >= self.frames:
-                self.memory.popitem(last=False)
-            self.memory[page_number] = True
+                self._replace_page(page_number)
+            else:
+                self.memory[page_number] = True
             self.disk_reads += 1
             if self.debug:
                 print(f"Page fault occurred. Read page {page_number} from disk.")
@@ -38,12 +39,19 @@ class LruMMU(MMU):
         else:
             self.page_faults += 1
             if len(self.memory) >= self.frames:
-                self.memory.popitem(last=False)
-            self.memory[page_number] = True
+                self._replace_page(page_number)
+            else:
+                self.memory[page_number] = True
             self.disk_reads += 1
             self.disk_writes += 1
             if self.debug:
                 print(f"Page fault occurred. Write to page {page_number} in disk.")
+
+    def _replace_page(self, page_number):
+        # Replace the least recently used page, which is the first in the OrderedDict
+        old_page, _ = self.memory.popitem(last=False)
+        self.disk_writes += 1  # Increment disk writes because we are replacing a page
+        self.memory[page_number] = True  # Insert the new page at the end (most recently used)
 
     def get_total_disk_reads(self):
         return self.disk_reads
