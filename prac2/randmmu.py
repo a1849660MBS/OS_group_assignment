@@ -48,6 +48,7 @@ class RandMMU(MMU):
     def _replace_page(self, page_number):
         random_page = random.choice(list(self.memory.keys()))
         del self.memory[random_page]
+        self.disk_writes += 1  # Increment disk writes when replacing a page
         self.memory[page_number] = True
 
     def get_total_disk_reads(self):
