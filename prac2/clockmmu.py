@@ -1,15 +1,15 @@
 from mmu import MMU
-# test versin
+# test version, fixing the issue where it does not accept out code in gradescope - a1849660
 class ClockMMU(MMU):
     def __init__(self, frames):
         self.frames = frames
-        self.memory = {}
+        self.frame_list = [none] * frames
+        self.use_bits = [0] * frames
+        self.page_table = {}
         self.clock_hand = 0
-        self.reference_bits = {}
-        self.page_faults = 0
         self.disk_reads = 0
         self.disk_writes = 0
-        self.debug = False
+        self.page_faults = 0
 
     def set_debug(self):
         self.debug = True
@@ -18,50 +18,53 @@ class ClockMMU(MMU):
         self.debug = False
 
     def read_memory(self, page_number):
-        if page_number in self.memory:
-            self.reference_bits[page_number] = 1
-            if self.debug:
-                print(f"Read page {page_number} from memory.")
+        if page_number not in self.page_table:
+           self.page_faults += 1
+           self.disk_reads += 1
+           self._replace_page(page_number,write =False)
         else:
-            self.page_faults += 1
-            if len(self.memory) < self.frames:
-                self.memory[page_number] = True
-                self.reference_bits[page_number] = 1
-            else:
-                self._replace_page(page_number)
-            self.disk_reads += 1
-            if self.debug:
-                print(f"Page fault occurred. Read page {page_number} from disk.")
+            frame_index = self.page_table[page_number]
+            slef.use_bits[frame_index] = 1
 
     def write_memory(self, page_number):
-        if page_number in self.memory:
-            self.reference_bits[page_number] = 1
-            if self.debug:
-                print(f"Write to page {page_number} in memory.")
-        else:
+        if page_number not in self.page_table:
             self.page_faults += 1
-            if len(self.memory) < self.frames:
-                self.memory[page_number] = True
-                self.reference_bits[page_number] = 1
-            else:
-                self._replace_page(page_number)
             self.disk_reads += 1
-            self.disk_writes += 1
-            if self.debug:
-                print(f"Page fault occurred. Write to page {page_number} in disk.")
+            self._replace_page(page_number,write =True)
+        else:
+            frame_index = self.page_table[page_number]
+            self.use_bits[frame_index] = 1
+            self.frame_list[frame_index] = (page_number, true)
+
 
     def _replace_page(self, page_number):
         while True:
-            current_page = list(self.memory.keys())[self.clock_hand]
-            if self.reference_bits[current_page] == 0:
-                del self.memory[current_page]
-                del self.reference_bits[current_page]
-                self.memory[page_number] = True
-                self.reference_bits[page_number] = 1
+            if self.use_bits[self.clock_hand] == 0:
+                if self.frame_list[self.clock_hand] is not None:
+                    old_page, is_dirty = self.frame_list[self.clock_hand]
+                    #if I have a dirty bit
+                    if is_dirty:
+                        self.disk_writes += 1
+                    del self.page_table[old_page]
+                
+                self.frame_list[self.clock_hand] = (page_number, write)
+                self.page_table[page_number] = self.clock_hand
+                self.use_bits[self.clock_hand] = 1
+                self.clock_hand = (self.clock_hand + 1) % self.frames
                 break
             else:
-                self.reference_bits[current_page] = 0
-            self.clock_hand = (self.clock_hand + 1) % self.frames
+                self.use_bits[self.clock_hand] = 0
+                self.clock_hand = (self.clock_hand + 1) % self.frames
+
+                
+    def print_page_table(self):
+        print("Frame list:", self.frame_list)
+        print("Use bits:", self.use_bits)
+        print("Clcok hand position:", self.clock_hand)
+        print("Page table:", self.page_table)
+        print("Disk reads:", self.disk_reads)
+        print("Disk writes:", self.disk_writes)
+        print("Page faults:", self.page_faults)
 
     def get_total_disk_reads(self):
         return self.disk_reads
