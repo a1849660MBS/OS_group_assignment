@@ -1,3 +1,5 @@
+from mmu import MMU
+
 class ClockMMU(MMU):
     def __init__(self, frames):
         self.frames = frames
