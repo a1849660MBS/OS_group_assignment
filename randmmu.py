@@ -1,5 +1,5 @@
-from mmu import MMU
 import random
+from mmu import MMU
 
 class RandMMU(MMU):
     def __init__(self, frames):
@@ -12,10 +12,10 @@ class RandMMU(MMU):
         self.debug_mode = False
 
     def set_debug(self):
-        self.debug = True
+        self.debug_mode = True
 
     def reset_debug(self):
-        self.debug = False
+        self.debug_mode = False
 
     def read_memory(self, page_number):
         if page_number not in self.page_table:
@@ -32,10 +32,9 @@ class RandMMU(MMU):
             self.page_table[page_number] = 'clean'
             self.disk_reads += 1
 
-
     def write_memory(self, page_number):
-       self.read_memory(page_number)
-       self.page_table[page_number] = 'dirty'
+        self.read_memory(page_number)
+        self.page_table[page_number] = 'dirty'
 
     def get_total_disk_reads(self):
         return self.disk_reads

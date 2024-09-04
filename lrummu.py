@@ -4,10 +4,10 @@ from collections import OrderedDict
 class LruMMU(MMU):
     def __init__(self, frames):
         self.frames = frames
-        self.page_table = OrderedDict()  # The page table to track pages
-        self.page_faults = 0
+        self.page_table = OrderedDict()
         self.disk_reads = 0
         self.disk_writes = 0
+        self.page_faults = 0
         self.debug_mode = False
 
     def set_debug(self):
@@ -18,13 +18,13 @@ class LruMMU(MMU):
 
     def read_memory(self, page_number):
         if page_number not in self.page_table:
-            self.page_faults +=1
+            self.page_faults += 1
             if len(self.page_table) < self.frames:
                 self.page_table[page_number] = 'clean'
             else:
                 victim, status = self.page_table.popitem(last=False)
                 if status == 'dirty':
-                    slef.disk_writes += 1
+                    self.disk_writes += 1
                 self.page_table[page_number] = 'clean'
             self.disk_reads += 1
         else:
