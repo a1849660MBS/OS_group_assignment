@@ -8,13 +8,13 @@ class LruMMU(MMU):
         self.page_faults = 0
         self.disk_reads = 0
         self.disk_writes = 0
-        self.debug = False
+        self.debug_mode = False
 
     def set_debug(self):
-        self.debug = True
+        self.debug_mode = True
 
     def reset_debug(self):
-        self.debug = False
+        self.debug_mode = False
 
     def read_memory(self, page_number):
         if page_number not in self.page_table:
