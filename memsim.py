@@ -1,6 +1,20 @@
 """
 Memory Simulator
 """
+
+"""
+This is the group work of:
+
+Marwan Salih      a1849660
+Leon Xie          a1854587
+Jiahui Huang      a1896716
+
+This code is protected by the intellectual property rights of our group. 
+Do not copy, distribute, or use any part of this code without explicit permission 
+from the group members. Unauthorized use or plagiarism of this code will be reported 
+to the University of Adelaide and dealt with according to the university's policies on academic integrity.
+"""
+
 import sys
 from clockmmu import ClockMMU
 from lrummu import LruMMU
